@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { vi } from "vitest";
 import LoginForm from "../components/Login/LoginForm";
-import React from "react"; // Eksplicitni import
+// import React from "react"; // Eksplicitni import
 
 // Mock za React, če je potrebno
 vi.mock("react", async () => {

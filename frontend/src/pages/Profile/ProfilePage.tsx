@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../App";
-import { FiUser, FiLogOut } from "react-icons/fi";
+
 import "./ProfilePage.css";
 
 const ProfilePage: React.FC = () => {
@@ -45,31 +45,31 @@ const ProfilePage: React.FC = () => {
     }));
   };
 
-  const handleSave = () => {
-    const storedUser = localStorage.getItem("user");
+  // const handleSave = () => {
+  //   const storedUser = localStorage.getItem("user");
 
-    if (storedUser) {
-      try {
-        const user = JSON.parse(storedUser);
+  //   if (storedUser) {
+  //     try {
+  //       const user = JSON.parse(storedUser);
 
-        const updatedUser = {
-          ...user,
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-        };
+  //       const updatedUser = {
+  //         ...user,
+  //         firstName: userData.firstName,
+  //         lastName: userData.lastName,
+  //       };
 
-        localStorage.setItem("user", JSON.stringify(updatedUser));
-        setIsEditing(false);
-      } catch (error) {
-        console.error("Error saving user data:", error);
-      }
-    }
-  };
+  //       localStorage.setItem("user", JSON.stringify(updatedUser));
+  //       setIsEditing(false);
+  //     } catch (error) {
+  //       console.error("Error saving user data:", error);
+  //     }
+  //   }
+  // };
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
+  // const handleLogout = () => {
+  //   logout();
+  //   navigate("/login");
+  // };
 
   return (
     <div className="profile-page-container">
