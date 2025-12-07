@@ -44,7 +44,7 @@ jobs:
       - name: Build frontend
         run: npm run build
       - name: Run tests with coverage
-        run: npm run test -- --coverage --watchAll=false
+        run: npm run test --coverage --watchAll=false
       - name: Upload frontend coverage artifact
         uses: actions/upload-artifact@v4
         with:
