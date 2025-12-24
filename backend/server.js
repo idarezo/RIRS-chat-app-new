@@ -297,6 +297,7 @@ app.put(
         return res.status(404).json({ message: "User not found" });
       }
 
+      console.log("Updating profile for user:", user.uuid);
       const allowedUpdates = ["firstName", "lastName", "gender", "password"];
 
       for (const key of Object.keys(updatedProfle)) {
