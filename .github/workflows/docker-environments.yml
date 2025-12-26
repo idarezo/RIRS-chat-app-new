@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 env:
-  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/rirs-klepetalnica
+  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/rirs-klepetalnica
 
 jobs:
   build-and-push:
