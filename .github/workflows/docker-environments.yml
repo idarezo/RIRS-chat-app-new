@@ -1,0 +1,68 @@
+name: Docker build & deploy (Development / Production)
+
+on:
+  push:
+    branches: ["main", "production"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/rirs-klepetalnica
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Decide image tag
+        id: meta
+        run: |
+          if [ "${GITHUB_REF_NAME}" = "main" ]; then
+            echo "tag=dev" >> $GITHUB_OUTPUT
+          elif [ "${GITHUB_REF_NAME}" = "production" ]; then
+            echo "tag=prod" >> $GITHUB_OUTPUT
+          else
+            echo "tag=dev" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.tag }}
+
+  deploy-development:
+    needs: build-and-push
+    if: github.ref_name == 'main'
+    runs-on: ubuntu-latest
+    environment: Development
+    steps:
+      - name: Deploy to Development
+        run: |
+          echo "Deploy DEV image:"
+          echo "${{ env.IMAGE_NAME }}:dev"
+
+  deploy-production:
+    needs: build-and-push
+    if: github.ref_name == 'production'
+    runs-on: ubuntu-latest
+    environment: Production
+    steps:
+      - name: Deploy to Production (manual approval)
+        run: |
+          echo "Deploy PROD image:"
+          echo "${{ env.IMAGE_NAME }}:prod"
