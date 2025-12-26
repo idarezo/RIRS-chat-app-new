@@ -56,8 +56,50 @@ jobs:
           echo "Deploy DEV image:"
           echo "${{ env.IMAGE_NAME }}:dev"
 
+
+  quality-gate-production:
+  runs-on: ubuntu-latest
+  if: github.ref_name == 'production'
+  steps:
+    - name: Install jq
+      run: sudo apt-get update && sudo apt-get install -y jq
+
+    - name: Check SonarCloud Quality Gate (production branch)
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_PROJECT_KEY: idarezo_RIRS-chat-app-new-React
+      run: |
+        set -e
+        echo "Checking SonarCloud Quality Gate..."
+
+        # a few retries in case analysis isn't ready yet
+        for i in 1 2 3 4 5; do
+          resp=$(curl -sS -u "${SONAR_TOKEN}:" \
+            "https://sonarcloud.io/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}&branch=production")
+          status=$(echo "$resp" | jq -r '.projectStatus.status')
+          echo "Attempt $i: $status"
+
+          if [ "$status" = "OK" ]; then
+            echo "Quality Gate PASSED"
+            exit 0
+          fi
+
+          if [ "$status" = "ERROR" ]; then
+            echo "Quality Gate FAILED"
+            exit 1
+          fi
+
+          # NONE / not computed yet → wait and retry
+          sleep 10
+        done
+
+        echo "Quality Gate not ready after retries → failing to be safe."
+        exit 1
+
+
+
   deploy-production:
-    needs: build-and-push
+    needs: [build-and-push, quality-gate-production]
     if: github.ref_name == 'production'
     runs-on: ubuntu-latest
     environment: Production
@@ -66,3 +108,4 @@ jobs:
         run: |
           echo "Deploy PROD image:"
           echo "${{ env.IMAGE_NAME }}:prod"
+

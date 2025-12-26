@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, production]
   pull_request:
     branches: [main]
 
@@ -99,9 +99,32 @@ jobs:
             frontend/build/
             frontend/dist/
 
-  docker-build-push:
+  sonarcloud:
     runs-on: ubuntu-latest
     needs: [backend-build, frontend-build]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download backend coverage artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-coverage
+          path: backend/coverage
+
+      - name: Download frontend coverage artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-coverage
+          path: frontend/coverage
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v3
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  docker-build-push:
+    runs-on: ubuntu-latest
+    needs: [backend-build, frontend-build,sonarcloud]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
